@@ -1,5 +1,5 @@
 ## 使用模型
-###for eval.py
+###for render.py
 
     render_with_model_file('image_file_path','vgg16','models/mosaic.ckpt-done')
 
