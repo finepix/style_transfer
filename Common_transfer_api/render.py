@@ -30,8 +30,10 @@ def render_with_model_file(
         with tf.Session().as_default() as sess:
             if image_file.lower().endswith('png'):
                 image = sess.run(tf.image.decode_png(img.read()))
+                generated_file = generated_file + '.png'
             else:
                 image = sess.run(tf.image.decode_jpeg(img.read()))
+                generated_file = generated_file + '.jpg'
             height = image.shape[0]
             width = image.shape[1]
     tf.logging.info('Image size: %dx%d' % (width, height))
@@ -70,7 +72,7 @@ def render_with_model_file(
                 end_time = time.time()
                 tf.logging.info('Elapsed time: %fs' % (end_time - start_time))
 
-                tf.logging.info('Done. Please check %s.' % generated_file)
+                tf.logging.info('Done. Save file to  %s' % generated_file)
 
 
 if __name__ == '__main__':
