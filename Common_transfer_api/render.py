@@ -6,6 +6,7 @@ import reader
 import model
 import time
 import os
+import thread
 
 
 
@@ -15,13 +16,21 @@ def render_with_model_file(
         loss_model='vgg_16',                               # vgg_16 ,vgg_19 or imagenet
         output_file_path='/temp/smg/transfer/'          # output dir for rendered image
 ):
-    file_name = image_file.split('.')[0]
+    lock = thread.allocate_lock()
+    lock.acquire()
+
+    file_name = os.path.basename(image_file).split('.')[0]
+    model_name = os.path.basename(model_file).split('.')[0]
+
 
     # Make sure 'generated' directory exists.
-    generated_file = output_file_path + file_name
+    generated_file = output_file_path + file_name + '_' + model_name
     if os.path.exists(output_file_path) is False:
         os.makedirs(output_file_path)
 
+    print('image_file', image_file)
+    print('model_file', model_file)
+    print('gennerated_path,', generated_file)
 
     # Get image's height and width.
     height = 0
@@ -73,7 +82,7 @@ def render_with_model_file(
                 tf.logging.info('Elapsed time: %fs' % (end_time - start_time))
 
                 tf.logging.info('Done. Save file to  %s' % generated_file)
-
+    lock.release()
 
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
