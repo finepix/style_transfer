@@ -11,8 +11,8 @@ import os
 
 def render_with_model_file(
         image_file,                                         # image to render
-        loss_model,                                         # vgg_16 ,vgg_19 or imagenet
         model_file,                                         # the trained model to gennerate output file
+        loss_model='vgg_16',                               # vgg_16 ,vgg_19 or imagenet
         output_file_path='/temp/smg/transfer/'          # output dir for rendered image
 ):
     file_name = image_file.split('.')[0]
@@ -77,4 +77,4 @@ def render_with_model_file(
 
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
-    render_with_model_file('9.jpg','vgg_16','models/mosaic.ckpt-done')
+    render_with_model_file('9.jpg','vgg_16','models/mosaic.model')
