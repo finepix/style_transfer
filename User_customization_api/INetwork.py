@@ -273,18 +273,18 @@ def render(
         style_reference_image_paths,          # style picture (eg: ['images/inputs/style/blue_swirls.jpg'] )
         out_file_prefix,                      # prefix for output file
         content_weight=0.0025,                # the higher num for the more similarer to the content
-        style_weight=[1],                     # same as content_weight
+        style_weight=[1.0],                     # same as content_weight
         tv_weight=8.5e-5,
-        style_scale=1,                        #
+        style_scale=1.0,                        #
         style_masks=None,                     # the black part is not going to render (caution: Parameter should be a list )
         color_mask=None,                      # same as style_masks
         color=False,                          # wether to preserve the color
         pool='max',                          # pooling function (opt: ave or max)
-        img_size=400,                         # image width
+        img_size=600,                         # image width
         model_name='vgg16',                  # model name (opt: vgg16 or vgg19)
-        min_improvement=5.0,                  # the threshold (lower than this will be stoped)
+        min_improvement=0.0,                  # the threshold (lower than this will be stoped)
         rescale_image=False,
-        num_iter=5,                           # number for iterations
+        num_iter=15,                           # number for iterations
 ):
     global pooltype,f_outputs
 
@@ -593,4 +593,4 @@ def main():
 
 
 if __name__ == "__main__":
-    render('images/inputs/content/ancient_city.jpg',['images/inputs/style/blue_swirls.jpg'],style_masks=[])
+    render('images/inputs/content/c1.jpg',['images/inputs/style/udnie.jpg'],'c1m1',style_masks=['images/inputs/mask/m1.jpg'])

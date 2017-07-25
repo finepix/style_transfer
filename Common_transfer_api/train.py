@@ -11,6 +11,7 @@ import losses
 import utils
 import os
 import argparse
+import time
 
 slim = tf.contrib.slim
 
@@ -131,6 +132,9 @@ def main(FLAGS):
                     """checkpoint"""
                     if step % 1000 == 0:
                         saver.save(sess, os.path.join(training_path, 'fast-style-model.ckpt'), global_step=step)
+                    if step % 15000 == 0:
+                        print('waiting for 120s .')
+                        time.sleep(120)
             except tf.errors.OutOfRangeError:
                 saver.save(sess, os.path.join(training_path, 'fast-style-model.ckpt-done'))
                 tf.logging.info('Done training -- epoch limit reached')
