@@ -46,7 +46,7 @@ def mask(
     :param content_mask: 遮罩
     :return:  图片保存地址
     '''
-    image_path = os.path.basename(content_image).split('.')[0]+ "_masked.png"
+    image_path = IMAGE_SAVE_DIR + os.path.basename(content_image).split('.')[0]+ "_masked.png"
     print image_path
     generated_image = imread(generated_image, mode="RGB")
     img_width, img_height, channels = generated_image.shape

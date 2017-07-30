@@ -57,39 +57,39 @@ def load_mask(mask_path, shape):
     return mask
 
 
-parser = argparse.ArgumentParser(description='Neural style transfer color preservation.')
+IMAGE_SAVE_DIR = '/tmp/smg/transfer/'
 
-parser.add_argument('content_image', type=str, help='Path to content image')
-parser.add_argument('generated_image', type=str, help='Path to generated image')
-parser.add_argument('--mask', default=None, type=str, help='Path to mask image')
-parser.add_argument('--hist_match', type=int, default=0, help='Perform histogram matching for color matching')
 
-args = parser.parse_args()
+def color_preserve(
+        content_image,                                  # path to content image
+        generated_image,                                # path to generated image
+        hist_match=0                                    # Perform histogram matching for color matching 1 for histogram 0 for original
+):
+    mask = None
+    if hist_match == 1:
+        image_suffix = "_histogram_color.jpg"
+        mode = "RGB"
+    else:
+        image_suffix = "_original_color.jpg"
+        mode = "YCbCr"
+    image_path = IMAGE_SAVE_DIR + os.path.basename(content_image).split('.')[0] + image_suffix
 
-if args.hist_match == 1:
-    image_suffix = "_histogram_color.png"
-    mode = "RGB"
-else:
-    image_suffix = "_original_color.png"
-    mode = "YCbCr"
+    generated_image = imread(generated_image, mode="RGB")
+    img_width, img_height, _ = generated_image.shape
 
-image_path = os.path.splitext(args.generated_image)[0] + image_suffix
+    content_image = imread(content_image, mode=mode)
+    content_image = imresize(content_image, (img_width, img_height), interp='bicubic')
 
-generated_image = imread(args.generated_image, mode="RGB")
-img_width, img_height, _ = generated_image.shape
+    mask_transfer = mask is not None
+    if mask_transfer:
+        mask_img = load_mask(mask, generated_image.shape)
+    else:
+        mask_img = None
 
-content_image = imread(args.content_image, mode=mode)
-content_image = imresize(content_image, (img_width, img_height), interp='bicubic')
+    img = original_color_transform(content_image, generated_image, mask_img, hist_match, mode=mode)
+    imsave(image_path, img)
 
-mask_transfer = args.mask is not None
-if mask_transfer:
-    mask_img = load_mask(args.mask, generated_image.shape)
-else:
-    mask_img = None
-
-img = original_color_transform(content_image, generated_image, mask_img, args.hist_match, mode=mode)
-imsave(image_path, img)
-
-print("Image saved at path : %s" % image_path)
+    print("Image saved at path : %s" % image_path)
+    return image_path
 
 

@@ -68,11 +68,38 @@ def mask(
 ，所以启动服务器的时候要么给sudo，要么chmod
 ###参数说明
 
-> param content_image: 内容图
+> content_image: 内容图
 
 > generated_image: 生成图
 
 > content_mask: 遮罩
+
+###调用说明
+
+> 参数传递：将图片的地址传过来
+
+## Guild for color_transfer.py (颜色保护，渲染结束后生成的图)
+
+### 使用说明
+> 和上面的mask_transfer一样的（还是注意文件写入权限），直接将图片保存到/tmp/smg/transfer/目录下面去
+
+###函数申明
+```python
+def color_preserve(
+        content_image,                                  # path to content image
+        generated_image,                                # path to generated image
+        hist_match=0                                    # Perform histogram matching for color matching 1 for histogram 0 for original
+):
+```
+</b>返回</b>：处理之后的图片存放位置
+
+###参数说明
+
+> content_image: 内容图
+
+> generated_image: 生成图
+
+> hist_match: 是否使用柱状图的方式拟合，0表示直接使用原图的像素点替换，1表示使用柱状图拟合，得到一个相近的结果
 
 ###调用说明
 
