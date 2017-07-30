@@ -37,13 +37,13 @@ render('images/inputs/content/ancient_city.jpg',['images/inputs/style/blue_swirl
 ```
 只需要内容图片地址以及风格图片的地址即可
 
-###使用遮罩层
+###使用遮罩层（渲染的时候）
 ```
 render('images/inputs/content/ancient_city.jpg',['images/inputs/style/blue_swirls.jpg'],style_mask=['path_to_style_mask'])
 ```
 注意mask给出也是list，和前面的style_path统一
 
-###保存原图的颜色
+###保存原图的颜色（渲染的时候）
 ```
 render('images/inputs/content/ancient_city.jpg',['images/inputs/style/blue_swirls.jpg'],color=True)
 ```
@@ -51,6 +51,33 @@ render('images/inputs/content/ancient_city.jpg',['images/inputs/style/blue_swirl
 ```
 render('images/inputs/content/ancient_city.jpg',['images/inputs/style/blue_swirls.jpg'],color=True,color_mask='path_to_color_mask')
 ```
+
+## Guild for mask_transfer.py (使用遮罩，渲染结束后生成的图)
+
+### 使用说明
+> 这个和上面的区别开，这个方法是用于一个图片已经渲染之后，我发现我没有使用遮罩现在我想用遮罩，那么不必要再渲染一次，那么调用这个方法
+
+###函数申明
+```
+def mask(
+        content_image,
+        generated_image,
+        content_mask)
+```
+</b>返回</b>：图片存放的位置,默认存放在'/tmp/smg/transfer/'下面，涉及到一个问题，就是文件的访问权限，写的权限一般是普通用户（hdu_admin）不具备的
+，所以启动服务器的时候要么给sudo，要么chmod
+###参数说明
+
+> param content_image: 内容图
+
+> generated_image: 生成图
+
+> content_mask: 遮罩
+
+###调用说明
+
+> 参数传递：将图片的地址传过来
+
 
 ## Require
 numpy

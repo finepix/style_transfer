@@ -31,25 +31,41 @@ def mask_content(content, generated, mask):
 
     return generated
 
-parser = argparse.ArgumentParser(description='Neural style transfer color preservation.')
 
-parser.add_argument('content_image', type=str, help='Path to content image')
-parser.add_argument('generated_image', type=str, help='Path to generated image')
-parser.add_argument('content_mask', type=str, help='Path to content mask')
+IMAGE_SAVE_DIR = '/temp/smg/transfer/'
 
-args = parser.parse_args()
+def mask(
+        content_image,
+        generated_image,
+        content_mask
+):
+    '''
+    
+    :param content_image: 内容图
+    :param generated_image: 生成图
+    :param content_mask: 遮罩
+    :return:  图片保存地址
+    '''
+    image_path = os.path.basename(content_image).split('.')[0]+ "_masked.png"
+    print image_path
+    generated_image = imread(generated_image, mode="RGB")
+    img_width, img_height, channels = generated_image.shape
+    content_image = imread(content_image, mode='RGB')
+    content_image = imresize(content_image, (img_width, img_height), interp='bicubic')
 
-image_path = os.path.splitext(args.generated_image)[0] + "_masked.png"
+    mask = load_mask(content_mask, generated_image.shape)
+    img = mask_content(content_image, generated_image, mask)
+    imsave(image_path, img)
+    print("Image saved at path : %s" % image_path)
+    return image_path
 
-generated_image = imread(args.generated_image, mode="RGB")
-img_width, img_height, channels = generated_image.shape
 
-content_image = imread(args.content_image, mode='RGB')
-content_image = imresize(content_image, (img_width, img_height), interp='bicubic')
+if __name__ == '__main__':
+    mask('images/inputs/content/ancient_city.jpg','path_to_generated_image','images/inputs/mask/m1.jpg')
 
-mask = load_mask(args.content_mask, generated_image.shape)
 
-img = mask_content(content_image, generated_image, mask)
-imsave(image_path, img)
 
-print("Image saved at path : %s" % image_path)
+
+
+
+
