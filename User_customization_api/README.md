@@ -1,4 +1,4 @@
-## Guide for INetwork.py
+## Guide for INetwork.py(返回图片存放地址)
 ###render()参数说明
 > base_image_path                 内容图片的地址（本地地址，从文件中读取图片）
 

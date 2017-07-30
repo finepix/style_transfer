@@ -257,7 +257,7 @@ def eval_loss_and_grads(x):
 # vgg models
 TF_WEIGHTS_PATH_NO_TOP = 'h5/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
 TF_19_WEIGHTS_PATH_NO_TOP = 'h5/vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5'
-output_dir = 'output/'
+output_dir = '/tmp/smg/transfer/'
 # loss type
 content_loss_type = 0
 #layer
@@ -567,6 +567,9 @@ def render(
                 print("Improvement (%f) is less than improvement threshold (%f). Early stopping script." %
                       (improvement, improvement_threshold))
                 return
+        fname = output_dir + out_file_prefix + ".png"
+        imsave(fname, img)
+        return fname
 
 ''' Impliment functions ends '''
 
