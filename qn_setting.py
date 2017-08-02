@@ -9,5 +9,5 @@
 class Qn_setting:
     def __init__(self):
         self.access_key = 'iQ3ndG5uRpwdeln_gcrH3iiZ7E3KbMdJVkdYV9Im'
-        self.secret_key = 'AGsp6K7fu1NsH2DnsPi7hW3qa3JXb4dtfeGvkm'
+        self.secret_key = 'AGsp6K7fu1NsH2DnsPi7hW3qa3JXb4dtfeGvkm-A'
         self.bucket_name = 'image'

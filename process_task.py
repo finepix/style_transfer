@@ -10,6 +10,7 @@ import requests
 import json
 import os
 import time
+import thread
 from Common_transfer_api.render import render_with_model_file
 
 from qiniu import Auth, put_file, etag
@@ -104,18 +105,25 @@ def upload_qn(key,localfile):
 
 if __name__ == '__main__':
     tf_models = tf_models()
-    # 有任务
-    if not query():
-        print 'get to a job:'
-        job = pop()
-        if job['type'] == 'model':
-            # 下载文件
-            file_path = download_qb(job['url'])
-            # 渲染处理
-            model_file = tf_models.get_models(job['model'])
-            res_file  = render_with_model_file(file_path,model_file=model_file)
-            # 上传文件以及回调函数设置
-            ## 改名字
-            key = os.path.basename(res_file)
-            upload_qn(key,res_file)
-
+    # 获取锁
+    lock = thread.allocate_lock()
+    while True:
+        # 有任务
+        if not query():
+            lock.acquire()
+            print 'get to a job:'
+            job = pop()
+            if job['type'] == 'model':
+                # 下载文件
+                file_path = download_qb(job['url'])
+                # 渲染处理
+                model_file = tf_models.get_models(job['model'])
+                res_file  = render_with_model_file(file_path,model_file=model_file)
+                # 上传文件以及回调函数设置
+                ## 改名字
+                key = os.path.basename(res_file)
+                upload_qn(key,res_file)
+            lock.release()
+        else:
+            print 'no tasks,wait for 0.5s'
+            time.sleep(0.5)

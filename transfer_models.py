@@ -10,7 +10,7 @@ import os
 class tf_models:
     # 初始化
     def __init__(self):
-        self.models_dir='./Common_transfer_api/models'
+        self.models_dir='./Common_transfer_api/models/'
         self.models = {}
         self.generate_models()
 
@@ -19,7 +19,7 @@ class tf_models:
         for f in os.listdir(self.models_dir):
             file_name = os.path.basename(f)
             if file_name.endswith('.model'):
-                self.models[file_name.split('.')[0]] = os.path.abspath(f)
+                self.models[file_name.split('.')[0]] = os.path.abspath(self.models_dir + f)
 
         print 'load models:'
         print self.models

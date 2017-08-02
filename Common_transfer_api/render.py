@@ -14,7 +14,7 @@ def render_with_model_file(
         image_file,                                         # image to render
         model_file,                                         # the trained model to gennerate output file
         loss_model='vgg_16',                               # vgg_16 ,vgg_19 or imagenet
-        output_file_path='/temp/smg/transfer/'          # output dir for rendered image
+        output_file_path='/tmp/smg/transfer/'          # output dir for rendered image
 ):
     lock = thread.allocate_lock()
     lock.acquire()
@@ -82,8 +82,9 @@ def render_with_model_file(
                 tf.logging.info('Elapsed time: %fs' % (end_time - start_time))
 
                 tf.logging.info('Done. Save file to  %s' % generated_file)
+    return generated_file
     lock.release()
 
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
-    render_with_model_file('9.jpg','vgg_16','models/mosaic.model')
+    render_with_model_file('9.jpg','models/mosaic.model')
