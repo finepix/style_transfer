@@ -12,6 +12,8 @@ import os
 import time
 import thread
 from Common_transfer_api.render import render_with_model_file
+from User_customization_api.color_transfer import color_preserve
+from User_customization_api.INetwork import render
 
 
 from transfer_models import tf_models
@@ -64,9 +66,30 @@ def download_file(url,path=tmp_dir):
     return file_path
 
 
+def upload_file(res_file):
+    upload_url = base_url + 'file/upload'
+    files = {
+        'render_file': open(res_file, "rb")
+    }
+    r = requests.post(upload_url, files=files)
+    f = json.loads(r.text)['data']['render_file']
 
-def commit_task():
-    pass
+    print 'Render file is uploaded to url : %s' % f
+
+    return f
+
+
+def commit_task(task_id, res_file):
+    commit_url = base_url + 'tasks/finish'
+    f = upload_file(res_file)
+
+    data = {
+        'id':task_id,
+        'result':f
+    }
+    r = requests.post(commit_url,data)
+    print r.text
+
 
 def model_task(data):
     '''
@@ -80,7 +103,6 @@ def model_task(data):
         "model_name": "mosaic"
     }
 }    
-    
     :param task: 
     :return: 
     '''
@@ -91,22 +113,70 @@ def model_task(data):
     res_file = render_with_model_file(file_path, model_file=model_file)
     return res_file
 
+def color_task(data):
+    '''
+"data": {
+    "id": "1504770912237",
+    "type": "color",
+    "originalPic": "http://101.132.77.137/resources/imgs/1504486077409.jpg",
+    "renderPic": "http://101.132.77.137/resources/imgs/1504486077409.jpg"
+}
+    :param data: 
+    :return: 
+    '''
+    source_pic_path = download_file(data['originalPic'])
+    render_pic_path = download_file(data['renderPic'])
+    res_file = color_preserve(source_pic_path,render_pic_path)
+    return res_file
+
+
+
+
+def customized_task(data):
+    '''
+"data": {
+    "id": "1504771389744",
+    "type": "customized",
+    "originalPic": "http://101.132.77.137/resources/imgs/1504486077409.jpg",
+    "stylePic": "http://101.132.77.137/resources/imgs/1504818106963.jpg"
+}
+    :param data: 
+    :return: 
+    '''
+    pre_fix = "customized_"
+    source_pic_path = download_file(data['originalPic'])
+    style_pic_path = download_file(data['stylePic'])
+    res_file = render(source_pic_path,source_pic_path,pre_fix)
+    return res_file
+
 if __name__ == '__main__':
+
+
     tf_models = tf_models()
     # 获取锁
     lock = thread.allocate_lock()
     while True:
         # 有任务
+        res_file = ''
         task = pop()
-        if task['code'] == 0 :
+        if task['code'] == 0:
             lock.acquire()
             print 'get to a task:'
+
             if task['data']['type'] == 'model':
-                # 上传文件以及回调函数设置
+                # 完成任务以及返回渲染后的图片地址
                 res_file = model_task(task['data'])
-                ## 改名字
-                key = os.path.basename(res_file)
-                commit_task()
+
+            if task['data']['type'] == 'color':
+                res_file = color_task(task['data'])
+
+            if task['data']['type'] == 'customized':
+                res_file = customized_task(task['data'])
+
+            ## 获取任务id以及提交任务
+            key = task['data']['id']
+            commit_task(key, res_file)
+
             lock.release()
         else:
             print 'no tasks,wait for 0.5s'
