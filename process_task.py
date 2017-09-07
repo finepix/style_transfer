@@ -13,62 +13,38 @@ import time
 import thread
 from Common_transfer_api.render import render_with_model_file
 
-from qiniu import Auth, put_file, etag
-import qiniu.config
-from qn_setting import Qn_setting
+
 from transfer_models import tf_models
 
 # 服务器地址
-base_url = 'http://60.176.42.123:5000/'
+base_url = 'http://101.132.77.137:8080/'
 
-# 上传文件到七牛后， 七牛将文件名和文件大小回调给业务服务器。
-policy = {
-    'callbackUrl': 'http://60.176.42.123:5000/tasks/callback',
-    'callbackBody': 'filename=$(fname)'
-}
-
-def test_tasks(url):
-
-    # 测试tasks请求
-    data = requests.get(url).text
-    print data
-
-def query():
-    '''
-    {
-  "done": [],
-  "tasks": [
-    {
-      "model": "mosaic",
-      "type": "model",
-      "url": "https://oi3qt7c8d.qnssl.com/res.jpg"
-    },
-    {
-      "model": "mosaic",
-      "type": "model",
-      "url": "https://oi3qt7c8d.qnssl.com/res.jpg"
-    }
-  ]
-}
-    :return:   true 表示有任务
-                false 表示没有任务，那么继续查询
-    '''
-    query_url = base_url + 'tasks/query'
-    data = requests.get(query_url).text
-    print data
-    obj = json.loads(data)
-    return  True if len(obj['tasks']) == 0 else False
 
 def pop():
+    '''
+{
+    "code": 0,
+    "msg": "",
+    "data": {
+        "id": "1504765355806",
+        "type": "model",
+        "originalPic": "src/pic.jpg",
+        "model_name": "mosaic"
+    }
+}
+    :return: 
+    '''
     pop_url = base_url + 'tasks/pop'
     data = requests.get(pop_url).text
     obj = json.loads(data)
+
+    # ctn = True if len(obj['code']) == 0 else False
     return obj
 
 ##文件保存文件夹
 tmp_dir = './tmp/'
 
-def download_qb(url,path=tmp_dir):
+def download_file(url,path=tmp_dir):
     '''
             下载文件，默认保存到tmp文件夹之中
     :param url: 文件存储地址
@@ -88,20 +64,32 @@ def download_qb(url,path=tmp_dir):
     return file_path
 
 
-def upload_qn(key,localfile):
+
+def commit_task():
+    pass
+
+def model_task(data):
     '''
-    upload file to qn yun and set callback url and param
-    :param key: 上传之后的key值默认和文件名一致
-    :param localfile: 本地文件
+{
+    "code": 0,
+    "msg": "",
+    "data": {
+        "id": "1504765355806",
+        "type": "model",
+        "originalPic": "src/pic.jpg",
+        "model_name": "mosaic"
+    }
+}    
+    
+    :param task: 
     :return: 
     '''
-    setting = Qn_setting()
-    q = Auth(setting.access_key, setting.secret_key)
-
-    token = q.upload_token(setting.bucket_name, key, 3600, policy)
-    ret, info = put_file(token, key, localfile)
-    print(info)
-
+    # 下载文件
+    file_path = download_file(data['originalPic'])
+    # 渲染处理
+    model_file = tf_models.get_models(data['model_name'])
+    res_file = render_with_model_file(file_path, model_file=model_file)
+    return res_file
 
 if __name__ == '__main__':
     tf_models = tf_models()
@@ -109,20 +97,16 @@ if __name__ == '__main__':
     lock = thread.allocate_lock()
     while True:
         # 有任务
-        if not query():
+        task = pop()
+        if task['code'] == 0 :
             lock.acquire()
-            print 'get to a job:'
-            job = pop()
-            if job['type'] == 'model':
-                # 下载文件
-                file_path = download_qb(job['url'])
-                # 渲染处理
-                model_file = tf_models.get_models(job['model'])
-                res_file  = render_with_model_file(file_path,model_file=model_file)
+            print 'get to a task:'
+            if task['data']['type'] == 'model':
                 # 上传文件以及回调函数设置
+                res_file = model_task(task['data'])
                 ## 改名字
                 key = os.path.basename(res_file)
-                upload_qn(key,res_file)
+                commit_task()
             lock.release()
         else:
             print 'no tasks,wait for 0.5s'
