@@ -255,8 +255,8 @@ def eval_loss_and_grads(x):
 
 ''' Immutable parameters '''
 # vgg models
-TF_WEIGHTS_PATH_NO_TOP = 'h5/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
-TF_19_WEIGHTS_PATH_NO_TOP = 'h5/vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5'
+TF_WEIGHTS_PATH_NO_TOP = 'User_customization_api/h5/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
+TF_19_WEIGHTS_PATH_NO_TOP = 'User_customization_api/h5/vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5'
 output_dir = '/tmp/smg/transfer/'
 # loss type
 content_loss_type = 0
@@ -280,14 +280,17 @@ def render(
         color_mask=None,                      # same as style_masks
         color=False,                          # wether to preserve the color
         pool='max',                          # pooling function (opt: ave or max)
-        img_size=600,                         # image width
+        img_size=400,                         # image width
         model_name='vgg16',                  # model name (opt: vgg16 or vgg19)
         min_improvement=0.0,                  # the threshold (lower than this will be stoped)
         rescale_image=False,
-        num_iter=15,                           # number for iterations
+        num_iter=6,                           # number for iterations
 ):
     global pooltype,f_outputs
 
+    print 'in render.py:'
+    print base_image_path
+    print style_reference_image_paths
     style_image_paths = []
     for style_image_path in style_reference_image_paths:
         style_image_paths.append(style_image_path)
@@ -349,6 +352,7 @@ def render(
 
     style_reference_images = []
     for style_path in style_image_paths:
+        print 'in style_path_function: %s' % styles_path
         style_reference_images.append(K.variable(preprocess_image(style_path)))
 
     # this will contain our generated image
@@ -567,9 +571,9 @@ def render(
                 print("Improvement (%f) is less than improvement threshold (%f). Early stopping script." %
                       (improvement, improvement_threshold))
                 return
-        fname = output_dir + out_file_prefix + ".png"
+        fname = output_dir + out_file_prefix + ".jpg"
         imsave(fname, img)
-        return fname
+    return fname
 
 ''' Impliment functions ends '''
 
