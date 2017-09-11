@@ -37,7 +37,11 @@ def pop():
     :return: 
     '''
     pop_url = base_url + 'tasks/pop'
-    data = requests.get(pop_url).text
+    try:
+        data = requests.get(pop_url).text
+    except requests.exceptions.ConnectionError:
+        print '[function: pop()] error connect server.'
+        return None
     obj = json.loads(data)
 
     # ctn = True if len(obj['code']) == 0 else False
@@ -58,7 +62,11 @@ def download_file(url,path=tmp_dir):
     file_name = str(int(round(t * 1000))) + '.jpg'
     file_path = path + file_name
 
-    file_data = requests.get(url,stream=True)
+    try:
+        file_data = requests.get(url, stream=True)
+    except requests.exceptions.ConnectionError:
+        print 'failed to connect file server to download image file.'
+        return None
     with open(file_path,'wb') as f:
         for chunk in file_data.iter_content(chunk_size=512):
             if chunk:
@@ -159,6 +167,11 @@ if __name__ == '__main__':
         # 有任务
         res_file = ''
         task = pop()
+        if task is None:
+            print 'connect error, reconnect in 0.5s.'
+            time.sleep(0.5)
+            continue
+
         if task['code'] == 0:
             lock.acquire()
             print 'get to a task:'
