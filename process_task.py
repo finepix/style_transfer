@@ -44,7 +44,7 @@ def pop():
     return obj
 
 ##文件保存文件夹
-tmp_dir = './tmp/'
+tmp_dir = '/root/ws/Shawn/tmp/'
 
 def download_file(url,path=tmp_dir):
     '''
@@ -131,7 +131,6 @@ def color_task(data):
 
 
 
-
 def customized_task(data):
     '''
 "data": {
@@ -145,12 +144,13 @@ def customized_task(data):
     '''
     pre_fix = "customized_"
     source_pic_path = download_file(data['originalPic'])
-    style_pic_path = download_file(data['stylePic'])
-    res_file = render(source_pic_path,source_pic_path,pre_fix)
+    style_pic_path = []
+    style_pic_path.append(download_file(data['stylePic']))
+    res_file = render(source_pic_path,style_pic_path,pre_fix)
     return res_file
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
 
     tf_models = tf_models()
     # 获取锁
@@ -163,19 +163,26 @@ if __name__ == '__main__':
             lock.acquire()
             print 'get to a task:'
 
-            if task['data']['type'] == 'model':
-                # 完成任务以及返回渲染后的图片地址
-                res_file = model_task(task['data'])
+            try:
+                try:
+                    if task['data']['type'] == 'model':
+                        # 完成任务以及返回渲染后的图片地址
+                        res_file = model_task(task['data'])
 
-            if task['data']['type'] == 'color':
-                res_file = color_task(task['data'])
+                    if task['data']['type'] == 'color':
+                        res_file = color_task(task['data'])
 
-            if task['data']['type'] == 'customized':
-                res_file = customized_task(task['data'])
+                    if task['data']['type'] == 'customized':
+                        res_file = customized_task(task['data'])
 
-            ## 获取任务id以及提交任务
-            key = task['data']['id']
-            commit_task(key, res_file)
+                    ## 获取任务id以及提交任务
+                    key = task['data']['id']
+                    commit_task(key, res_file)
+                except:
+                    print 'error when process task id: %s ,type: %s' % (task['data']['id'], task['data'['type']])
+            except:
+                print 'error ocurred when task proccessing.'
+
 
             lock.release()
         else:
