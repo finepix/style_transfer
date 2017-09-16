@@ -11,6 +11,9 @@ import json
 import os
 import time
 import thread
+import logging
+import logging.handlers
+
 from Common_transfer_api.render import render_with_model_file
 from User_customization_api.color_transfer import color_preserve
 from User_customization_api.INetwork import render
@@ -22,7 +25,9 @@ from transfer_models import tf_models
 base_url = 'http://101.132.77.137:8080/'
 
 
-def pop():
+
+
+def pop(count):
     '''
 {
     "code": 0,
@@ -40,7 +45,8 @@ def pop():
     try:
         data = requests.get(pop_url).text
     except requests.exceptions.ConnectionError:
-        print '[function: pop()] error connect server.'
+        if count % 10 == 0:
+            logger.error('error connect server.')
         return None
     obj = json.loads(data)
 
@@ -65,7 +71,7 @@ def download_file(url,path=tmp_dir):
     try:
         file_data = requests.get(url, stream=True)
     except requests.exceptions.ConnectionError:
-        print 'failed to connect file server to download image file.'
+        logger.error( 'failed to connect file server to download image file.')
         return None
     with open(file_path,'wb') as f:
         for chunk in file_data.iter_content(chunk_size=512):
@@ -159,23 +165,44 @@ def customized_task(data):
 
 
 if __name__ == '__main__':
+    # 日志输出配置
+
+    # 实例化handler(用于输出到控制台)
+    handler = logging.StreamHandler()
+    fmt = '%(asctime)s - %(filename)s:%(lineno)s - %(name)s - %(message)s'
+    # 实例化formatter
+    formatter = logging.Formatter(fmt)
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger('shawn')
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+
+    logger.info('logger is configured.')
 
     tf_models = tf_models()
     # 获取锁
     lock = thread.allocate_lock()
+    count = 0
     while True:
         # 有任务
         res_file = ''
-        task = pop()
+        task = pop(count)
         if task is None:
-            print 'connect error, reconnect in 0.5s.'
+            if count % 10 ==0 :
+                logger.error('connect error, reconnect in 0.5s.')
             time.sleep(0.5)
+            count += 1
             continue
+
+        if task['code'] is None:
+            if count % 10 == 0:
+                print 'error:%s /n msg: %s' % (task['error'],task['message'])
 
         if task['code'] == 0:
             lock.acquire()
             print 'get to a task:'
-
+            count = 0
             try:
                 try:
                     if task['data']['type'] == 'model':
@@ -194,10 +221,12 @@ if __name__ == '__main__':
                 except:
                     print 'error when process task id: %s ,type: %s' % (task['data']['id'], task['data'['type']])
             except:
-                print 'error ocurred when task proccessing.'
+                logger.warn('error ocurred when task proccessing.')
 
 
             lock.release()
         else:
-            print 'no tasks,wait for 0.5s'
+            if count % 10 == 0:
+                logger.info('no tasks,wait for 0.5s(10 times 1 output)')
+            count += 1
             time.sleep(0.5)
